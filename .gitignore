@@ -1,1 +1,4 @@
 node_modules
+.batect
+.env
+postgres-data

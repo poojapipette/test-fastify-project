@@ -1,0 +1,94 @@
+containers:
+  my-container:
+    image: alpine:3.11.3
+  build-fastify-env:
+    image: node:22.22.3
+    volumes:
+      - local: .
+        container: /code
+        options: cached
+      - type: cache
+        name: node_modules
+        container: /code/node_modules
+    working_directory: /code
+  db:
+    image: postgres:alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - local: ./postgres-data
+        container: /var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: app
+      POSTGRES_DB: db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    health_check:
+      command: pg_isready -U app -d db
+      interval: 2s
+      retries: 10
+      start_period: 2s
+  db-test:
+    image: postgres:alpine
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: app
+      POSTGRES_DB: db
+    health_check:
+      command: pg_isready -U app -d db
+      interval: 2s
+      retries: 10
+      start_period: 2s
+
+tasks:
+  say-hello:
+    description: Say hello to the nice person reading the Batect documentation
+    run:
+      container: my-container
+      command: echo 'Hello world!'
+
+  #task for installing dependencies
+  install-dep:
+    description: Install dependencies for the fastify environment
+    run:
+      container: build-fastify-env
+      command: npm install
+  #task for running the application
+  start-server:
+    description: Run the application in the fastify environment
+    run:
+      environment:
+        PORT: 8080
+        POSTGRES_URI: postgres://app:password@db/db
+      container: build-fastify-env
+      command: npm start
+      ports:
+        - 5000:8080
+    dependencies:
+      - db
+
+  #task for running tests
+  test-watch:
+    description: Run tests in watch mode
+    run:
+      container: build-fastify-env
+      environment:
+        PORT: 8080
+        POSTGRES_URI: postgres://app:password@db-test/db
+      command: npm run test:watch
+    dependencies:
+      - db-test
+
+  #start test database
+  start-test-db:
+    description: Start the test database
+    run:
+      container: db-test
+
+  #start dev database
+  start-dev-db:
+    description: Start the development database
+    run:
+      container: db
