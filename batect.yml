@@ -106,6 +106,7 @@ tasks:
     dependencies:
       - db-test
 
+  #task for running lint
   lint:
     description: run lint
     run:
