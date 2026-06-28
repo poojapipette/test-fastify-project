@@ -4,7 +4,7 @@ const applyMigration = require("./helper/migration");
 const config = require("../config");
 
 // plugins are functions which have 3 parts - fastify instance, options and next/done callback
-const db = async (fastify, options) => {
+const db = async (fastify) => {
   const dbConnection = pgp(config.database_uri); // connect to db using pg-promise and connection string from env variable
 
   // register db as a decorator to provide globally

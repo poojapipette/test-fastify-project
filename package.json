@@ -5,12 +5,16 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon server.js",
-    "test": "jest --forceExit",
-    "test:watch": "jest --watchAll"
+    "test": "CI=true jest --coverage --runInBand --detectOpenHandles",
+    "test:watch": "jest --watchAll --detectOpenHandles --runInBand",
+    "lint:fix": "eslint '**/*.js' --fix --ignore-pattern node_modules/",
+    "lint": "eslint '**/*.js' --ignore-pattern node_modules/ migrations/"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/swagger": "^9.7.0",
+    "@fastify/swagger-ui": "^6.0.0",
     "db-migrate": "^0.11.14",
     "db-migrate-pg": "^1.5.2",
     "dotenv": "^17.4.2",

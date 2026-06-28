@@ -55,6 +55,7 @@ tasks:
     run:
       container: build-fastify-env
       command: npm install
+
   #task for running the application
   start-server:
     description: Run the application in the fastify environment
@@ -92,3 +93,21 @@ tasks:
     description: Start the development database
     run:
       container: db
+
+  #CI/CD task
+  test-ci:
+    description: run tests in CI/CD environment
+    run:
+      environment:
+        PORT: 8080
+        POSTGRES_URI: postgres://app:password@db-test/db
+      container: build-fastify-env
+      command: npm run test
+    dependencies:
+      - db-test
+
+  lint:
+    description: run lint
+    run:
+      container: build-fastify-env
+      command: npm run lint
